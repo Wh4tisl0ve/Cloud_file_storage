@@ -13,6 +13,7 @@ services:
     image: redis:latest
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
+      - redis_data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     ports:
       - 6380:6379
@@ -21,3 +22,4 @@ services:
 
 volumes:
   postgres_volume:
+  redis_data:
