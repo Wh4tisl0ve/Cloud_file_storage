@@ -94,3 +94,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Redirect settings
 LOGIN_REDIRECT_URL = "cloud:main"
 LOGOUT_REDIRECT_URL = "login"
+
+# Settings cache(Redis db)
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://default:{config('REDIS_PASSWORD')}@{config('REDIS_HOST')}:{config('REDIS_PORT')}",
+    }
+}
