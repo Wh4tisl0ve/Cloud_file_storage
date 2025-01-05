@@ -1,0 +1,18 @@
+{% extends './base.html' %}
+
+{% block title %}
+Авторизация
+{% endblock %}
+
+{% block content %}
+
+{% load django_bootstrap5 %}
+
+<p class="text-center">
+    <button class="btn btn-block btn-outline-dark my-3" type="submit">Вход</button>
+    <button class="btn" type="reset">Очистить форму</button>
+</p>
+
+<p class="text-center">Ещё нет аккаунта? <a class="text-decoration-none" href="{% url 'users:register' %}">Регистрация</a></p>
+
+{% endblock %}

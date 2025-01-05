@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать</title>
+    {% load static %}
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+</head>
+
+<body>
+    <div class="container d-flex
+         align-items-center
+         justify-content-center
+         min-vh-100">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="border d-flex flex-column" style="width:30rem;">
+                <div style="background:black;" class="text-center text-white">
+                    <p class="h5 mt-2 py-4 font-weight-bold">{% block title %}{% endblock %}</p>
+                </div>
+                <div class="mx-4 mt-4 p-3">
+                    {% bootstrap_form form %}
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
