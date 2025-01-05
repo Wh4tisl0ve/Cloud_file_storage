@@ -1,13 +1,5 @@
 services:
-  db:
-    container_name: dbcloud_storage
-    image: postgres:16.0-alpine
-    volumes:
-      - postgres_volume:/var/lib/postgresql/data/
-    ports:
-      - 5433:5432
-    env_file:
-      - ./cloud_storage/.env.dev
+
   redis:
     container_name: redis
     image: redis:latest
@@ -18,8 +10,7 @@ services:
     ports:
       - 6380:6379
     env_file:
-      - ./cloud_storage/.env.dev
+      - ./cloud_storage/.env
 
 volumes:
-  postgres_volume:
   redis_data:
