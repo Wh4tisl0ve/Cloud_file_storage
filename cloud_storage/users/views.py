@@ -14,8 +14,7 @@ class RegistrationPageView(TemplateView):
     def post(self, request):
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
-            new_user = register_form.save(commit=False)
-            new_user.save()
+            register_form.save(commit=True)
             return redirect("users:login")
 
         return render(request, self.template_name, {"form": register_form})
