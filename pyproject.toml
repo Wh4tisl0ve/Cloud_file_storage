@@ -10,6 +10,7 @@ python = "^3.12.0"
 django = "^5.1.4"
 psycopg2 = "^2.9.10"
 python-decouple = "^3.8"
+django-bootstrap5 = "^24.3"
 
 
 [build-system]
