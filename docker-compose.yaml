@@ -1,6 +1,6 @@
 services:
 
-  db:
+  postgres:
     container_name: dbcloud_storage
     image: postgres:16.0-alpine
     volumes:
@@ -12,20 +12,23 @@ services:
 
   redis:
     container_name: redis
-    image: redis:latest
+    image: redis:7.4.2-alpine
     command: >
       sh -c '
         mkdir -p /usr/local/etc/redis &&
         echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
-        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "requirepass \"$REDIS_PASSWORD\"" >> /usr/local/etc/redis/redis.conf &&
         echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
         echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
         redis-server /usr/local/etc/redis/redis.conf
       '
+    volumes:
+      - redis_data:/data
     ports:
       - 6380:6379
     env_file:
-      - ./cloud_storage/.env
+      - /cloud_storage/.env
 
 volumes:
   postgres_volume:
+  redis_data:
