@@ -26,9 +26,22 @@ services:
       - redis_data:/data
     ports:
       - 6380:6379
-    env_file:
+    env_file: 
       - /cloud_storage/.env
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_volume:/data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    env_file:
+      - ./cloud_storage/.env
 
 volumes:
   postgres_volume:
+  minio_volume:
   redis_data:
