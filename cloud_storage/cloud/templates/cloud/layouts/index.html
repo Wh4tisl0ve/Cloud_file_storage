@@ -1,0 +1,44 @@
+{% extends '../base.html' %}
+
+{% load static %}
+
+{% block content %}
+<main>
+    <section id="upload" class="section">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" id="file" name="file" multiple />
+            <button>Submit</button>
+        </form>
+    </section>
+    <section id="files" class="section">
+        <table class="table">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Название</th>
+                    <th scope="col">Дата изменения</th>
+                    <th scope="col">Размер</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in user_objects %}
+                    <tr>
+                        <th scope="row">
+                            {% if obj.is_dir %}
+                                <img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt="">
+                            {% else %}
+                                <img src="{% static 'cloud/icons/' %}file.png" height="25px" alt="">
+                            {% endif %}
+                        </th>
+                        <td>{{ obj.object_name }}</td>
+                        <td>{{ obj.last_modified|default:"-" }}</td>
+                        <td>{{ obj.size|default:"-" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+
+{% endblock %}
