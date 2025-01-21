@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 from django.conf import settings
 
-from .s3_service.s3_service_factory import S3ServiceFactory
+from .s3_service.s3_client import get_minio_client
+from .s3_service.s3_service import S3Service
 
 
 class CloudConfig(AppConfig):
@@ -9,13 +10,12 @@ class CloudConfig(AppConfig):
     name = "cloud"
 
     def ready(self):
-        s3_factory = S3ServiceFactory(
+        minio_client = get_minio_client(
             endpoint=settings.MINIO_URL,
             access_key=settings.MINIO_ACCESS_KEY,
             secret_key=settings.MINIO_SECRET_KEY,
-            secure=False,
         )
 
         bucket_name = settings.MINIO_BUCKET_NAME
 
-        self.s3_service = s3_factory.get_service(bucket_name)
+        self.s3_service = S3Service(minio_client, bucket_name)

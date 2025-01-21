@@ -30,9 +30,7 @@ class S3Service:
         object_name: str,
         current_directory: str = "",
         data: io.BytesIO = io.BytesIO(b""),
-    ) -> str:
-        data = io.BytesIO(data)
-        
+    ) -> str:        
         object_path = self.create_path(user_id, object_name, current_directory)
 
         self.__client.put_object(
