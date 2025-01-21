@@ -1,3 +1,5 @@
+import io
+
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +13,7 @@ class MainPageView(LoginRequiredMixin, TemplateView):
 
         current_path = request.GET.get("path")
 
-        user_objects = list(s3_service.get_objects(request.user.id, current_path))
+        user_objects = sorted(s3_service.get_objects(request.user.id, current_path), key=lambda x: not x.is_dir)
 
         return render(request, "cloud/layouts/index.html", context={'user_objects': user_objects})
 
@@ -23,7 +25,7 @@ class MainPageView(LoginRequiredMixin, TemplateView):
 
         if file:
             object_name = request.FILES.get("file").name
-            object_bytes = request.FILES.get("file").read()
+            object_bytes = io.BytesIO(request.FILES.get("file").read())
 
             s3_service.create_object(
                 request.user.id, object_name, current_path, object_bytes
