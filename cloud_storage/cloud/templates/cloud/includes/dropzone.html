@@ -1,0 +1,10 @@
+<form id="upload-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div id="drop-zone" class="drop-zone">
+        <span class="drop-zone__prompt">
+            Перетащите файлы или папки сюда или нажмите, чтобы выбрать
+        </span>
+        <input type="file" id="file-input" name="fileList" webkitdirectory multiple hidden />
+    </div>
+    <ul id="file-listing"></ul>
+</form>

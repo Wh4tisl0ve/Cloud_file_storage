@@ -4,41 +4,54 @@
 
 {% block content %}
 <main>
-    <section id="upload" class="section">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" id="file" name="file" multiple />
-            <button>Submit</button>
-        </form>
-    </section>
-    <section id="files" class="section">
-        <table class="table">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Название</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col">Размер</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for obj in user_objects %}
-                    <tr>
-                        <th scope="row">
-                            {% if obj.is_dir %}
-                                <img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt="">
-                            {% else %}
-                                <img src="{% static 'cloud/icons/' %}file.png" height="25px" alt="">
-                            {% endif %}
-                        </th>
-                        <td>{{ obj.object_name }}</td>
-                        <td>{{ obj.last_modified|default:"-" }}</td>
-                        <td>{{ obj.size|default:"-" }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
-</main>
+    <div class="main_container">
+        <div class="left-column">
+            <h1>Действия</h1>
+            <button class="btn btn-primary" id="create-object-button">
+                Создать
+            </button>
+            {% include "../includes/dropzone.html" %}
+        </div>
 
+        <div class="right-column">
+            <section id="files" class="section">
+                <h5>Список файлов</h5>
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Название</th>
+                            <th scope="col">Дата изменения</th>
+                            <th scope="col">Размер</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in user_objects %}
+                        {% if obj.is_dir %}
+                        <a href="{% url 'cloud:main' %}">
+                            <tr style="cursor: pointer;">
+                                <td><img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt=""></td>
+                                <td>{{ obj.object_name }}</td>
+                                <td>{{ obj.last_modified|default:"-" }}</td>
+                                <td>{{ obj.size|default:"-" }}</td>
+                            </tr>
+                        </a>
+                        {% else %}
+                        <tr>
+                            <td><img src="{% static 'cloud/icons/' %}file.png" height="25px" alt=""></td>
+                            <td>{{ obj.object_name }}</td>
+                            <td>{{ obj.last_modified|default:"-" }}</td>
+                            <td>{{ obj.size|default:"-" }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</main>
+<script src="{% static 'cloud/js/dropzone.js' %}"></script>
+<script src="{% static 'cloud/js/object_actions.js' %}"></script>
 {% endblock %}
