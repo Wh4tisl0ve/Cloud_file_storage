@@ -4,54 +4,80 @@
 
 {% block content %}
 <main>
-    <div class="main_container">
-        <div class="left-column">
-            <h1>Действия</h1>
-            <button class="btn btn-primary" id="create-object-button">
-                Создать
-            </button>
-            {% include "../includes/dropzone.html" %}
-        </div>
+    <div class="container">
+        <div class="row mt-2">
+            <div class="col-12 col-md-2 mb-3">
+                <button class="btn btn-primary w-100 mb-2" id="create-folder-button">
+                    Создать папку
+                </button>
+                <button class="btn btn-primary w-100 mb-2" id="create-file-button">
+                    Создать файл
+                </button>
+                {% include "../includes/dropzone.html" %}
+            </div>
 
-        <div class="right-column">
-            <section id="files" class="section">
-                <h5>Список файлов</h5>
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope="col">Название</th>
-                            <th scope="col">Дата изменения</th>
-                            <th scope="col">Размер</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for obj in user_objects %}
-                        {% if obj.is_dir %}
-                        <a href="{% url 'cloud:main' %}">
-                            <tr style="cursor: pointer;">
-                                <td><img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt=""></td>
-                                <td>{{ obj.object_name }}</td>
-                                <td>{{ obj.last_modified|default:"-" }}</td>
-                                <td>{{ obj.size|default:"-" }}</td>
-                            </tr>
-                        </a>
-                        {% else %}
-                        <tr>
-                            <td><img src="{% static 'cloud/icons/' %}file.png" height="25px" alt=""></td>
-                            <td>{{ obj.object_name }}</td>
-                            <td>{{ obj.last_modified|default:"-" }}</td>
-                            <td>{{ obj.size|default:"-" }}</td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </section>
+
+            <div class="col-12 col-md-10">
+                <section id="files" class="section">
+                    <h5>Список файлов</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">Название</th>
+                                    <th scope="col">Дата изменения</th>
+                                    <th scope="col">Размер</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for obj in user_objects %}
+                                {% if obj.is_dir %}
+                                <tr style="cursor: pointer;">
+                                    <td>
+                                        <img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt="">
+                                    </td>
+                                {% else %}
+                                <tr>
+                                    <td>
+                                        <img src="{% static 'cloud/icons/' %}file.png" height="25px" alt="">
+                                    </td>
+                                {% endif %}
+                                    <td>{{ obj.object_name }}</td>
+                                    <td>{{ obj.last_modified|default:"-" }}</td>
+                                    <td>{{ obj.size|default:"-" }}</td>
+                                    <td>
+                                        <button class="btn btn-secondary" 
+                                            data-bs-toggle="popover"
+                                            title="Действия с объектом"
+                                            data-bs-content='
+                                                <button class="btn btn-primary btn-sm w-100 mb-2">Скачать</button>
+                                                <button class="btn btn-warning btn-sm w-100 mb-2">Переименовать</button>
+                                                <button class="btn btn-danger btn-sm w-100">Удалить</button>'>⋮</button>
+                                    </td>                                
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
+
 </main>
 <script src="{% static 'cloud/js/dropzone.js' %}"></script>
 <script src="{% static 'cloud/js/object_actions.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            new bootstrap.Popover(popoverTriggerEl, {
+                html: true, 
+                sanitize: false
+            });
+        });
+    });
+</script>
 {% endblock %}
