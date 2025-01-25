@@ -16,10 +16,27 @@
                 {% include "../includes/dropzone.html" %}
             </div>
 
-
             <div class="col-12 col-md-10">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                        {% for name_folder in breadcrumb %}
+                            {% if forloop.last %}
+                            <li class="breadcrumb-item active" aria-current="page">
+                                {{ name_folder }}
+                            </li>
+                            {% else %}
+                            <li class="breadcrumb-item">
+                                <a href="/?path={{ name_folder }}">
+                                    {{ name_folder }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                </nav>
                 <section id="files" class="section">
-                    <h5>Список файлов</h5>
+
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="table-light">
@@ -34,7 +51,8 @@
                             <tbody>
                                 {% for obj in user_objects %}
                                 {% if obj.is_dir %}
-                                <tr style="cursor: pointer;">
+                                <tr style="cursor: pointer;"
+                                    onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">
                                     <td>
                                         <img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt="">
                                     </td>
@@ -48,14 +66,13 @@
                                     <td>{{ obj.last_modified|default:"-" }}</td>
                                     <td>{{ obj.size|default:"-" }}</td>
                                     <td>
-                                        <button class="btn btn-secondary" 
-                                            data-bs-toggle="popover"
+                                        <button class="btn btn-secondary" data-bs-toggle="popover"
                                             title="Действия с объектом"
                                             data-bs-content='
                                                 <button class="btn btn-primary btn-sm w-100 mb-2">Скачать</button>
                                                 <button class="btn btn-warning btn-sm w-100 mb-2">Переименовать</button>
-                                                <button class="btn btn-danger btn-sm w-100">Удалить</button>'>⋮</button>
-                                    </td>                                
+                                                <button class="btn btn-danger btn-sm w-100" data-object-name="{{ obj.object_name }}">Удалить</button>'>⋮</button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -74,7 +91,7 @@
         const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
         popoverTriggerList.forEach(function (popoverTriggerEl) {
             new bootstrap.Popover(popoverTriggerEl, {
-                html: true, 
+                html: true,
                 sanitize: false
             });
         });
