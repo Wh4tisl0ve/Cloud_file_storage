@@ -1,16 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const createObjectButton = document.getElementById("create-object-button");
+    const createFileButton = document.getElementById("create-file-button");
+    const createFolderButton = document.getElementById("create-folder-button");
 
-    createObjectButton.addEventListener("click", () => {
-        const nameObject = prompt("Введите название объекта:");
+    createFileButton.addEventListener("click", () => {
+        name_file = prompt("Введите название объекта:");
+        if (validate_name(name_file)) {
+            create_object(name_file);
+        }
+    }
+    );
+    
+    createFolderButton.addEventListener("click", () => {
+        name_folder = prompt("Введите название объекта:") + '/';
+        if (validate_name(name_folder)) {
+            create_object(name_folder);
+        }
+    }
+    );
 
-        if (nameObject && nameObject.trim() !== "") {
-            create_object(nameObject);
+    function validate_name(nameObject) {
+        if (nameObject && nameObject.trim() !== "" && nameObject.length < 12) {
+            return true;
         } else {
             alert("Название объекта не может быть пустым.");
+            return false;
         }
-    });
-
+    }
 
     function create_object(nameObject) {
         let object_info = {
