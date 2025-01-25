@@ -1,7 +1,10 @@
 import io
-from typing import Generator
+
+
+import minio
 
 from minio import Minio
+import minio.datatypes
 from minio.error import S3Error
 from minio.commonconfig import CopySource
 
@@ -30,7 +33,8 @@ class S3Service:
         object_name: str,
         current_directory: str = "",
         data: io.BytesIO = io.BytesIO(b""),
-    ) -> str:        
+    ) -> str:
+        # поработать с именем, если в данной папке уже есть такое
         object_path = self.create_path(user_id, object_name, current_directory)
 
         self.__client.put_object(
@@ -42,10 +46,20 @@ class S3Service:
 
         return object_path
 
-    def get_objects(self, user_id: str, directory: str) -> Generator:
-        target_path = self.create_path(user_id, directory=directory)
+    def get_objects(
+        self, user_id: str, subdirectory: str
+    ) -> list[minio.datatypes.Object]:
+        target_path = self.create_path(user_id, directory=subdirectory)
 
-        return self.__client.list_objects(self.__bucket_name, prefix=target_path)
+        user_objects = sorted(
+            self.__client.list_objects(self.__bucket_name, prefix=target_path),
+            key=lambda obj: not obj.is_dir,
+        )
+
+        for obj in user_objects:
+            obj._object_name = obj._object_name.replace(target_path, "")
+
+        return user_objects
 
     def delete_object(
         self, user_id: int, object_name: str, current_directory: str = ""
