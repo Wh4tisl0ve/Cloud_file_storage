@@ -11,15 +11,18 @@ class MainPageView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         s3_service = apps.get_app_config("cloud").s3_service
 
-        current_path = request.GET.get("path")
+        current_path = request.GET.get("path", "").strip("/")
 
-        user_objects = sorted(
-            s3_service.get_objects(request.user.id, current_path),
-            key=lambda x: not x.is_dir,
-        )
+        user_objects = s3_service.get_objects(request.user.id, current_path)
 
         return render(
-            request, "cloud/layouts/index.html", context={"user_objects": user_objects}
+            request,
+            "cloud/layouts/index.html",
+            context={
+                "user_objects": user_objects,
+                "current_path": current_path,
+                "breadcrumb": current_path.split('/')
+            },
         )
 
     def post(self, request, *args, **kwargs):

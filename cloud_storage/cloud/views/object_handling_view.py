@@ -13,7 +13,7 @@ class S3ObjectHandlingView(LoginRequiredMixin, TemplateView):
         request_body = json.loads(request.body.decode('utf-8'))
         object_name = request_body.get('nameFolder')
 
-        current_path = request.GET.get("path")
+        current_path = request.GET.get("path", "").strip("/")
 
         s3_service.create_object(request.user.id, object_name, current_path)
         
