@@ -15,13 +15,19 @@ class MainPageView(LoginRequiredMixin, TemplateView):
 
         user_objects = s3_service.get_objects(request.user.id, current_path)
 
+        path = ""
+        breadcrumb = []
+        for page in current_path.split("/"):
+            path += f"{page}/"
+            breadcrumb.append((path, page))
+
         return render(
             request,
             "cloud/layouts/index.html",
             context={
                 "user_objects": user_objects,
                 "current_path": current_path,
-                "breadcrumb": current_path.split('/')
+                "breadcrumb": breadcrumb,
             },
         )
 

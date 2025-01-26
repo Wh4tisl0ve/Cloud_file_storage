@@ -20,14 +20,14 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/">Главная</a></li>
-                        {% for name_folder in breadcrumb %}
+                        {% for fullpath, name_folder in breadcrumb %}
                             {% if forloop.last %}
                             <li class="breadcrumb-item active" aria-current="page">
                                 {{ name_folder }}
                             </li>
                             {% else %}
                             <li class="breadcrumb-item">
-                                <a href="/?path={{ name_folder }}">
+                                <a href="/?path={{ fullpath }}">
                                     {{ name_folder }}
                                 </a>
                             </li>
