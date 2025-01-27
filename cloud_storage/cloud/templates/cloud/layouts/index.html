@@ -35,8 +35,8 @@
                         {% endfor %}
                     </ol>
                 </nav>
-                <section id="files" class="section">
 
+                <section id="files" class="section">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="table-light">
@@ -51,17 +51,27 @@
                             <tbody>
                                 {% for obj in user_objects %}
                                 {% if obj.is_dir %}
-                                <tr style="cursor: pointer;"
-                                    onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">
-                                    <td>
-                                        <img src="{% static 'cloud/icons/' %}folder.png" height="25px" alt="">
+                                <tr style="cursor: pointer;">
+                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">
+                                        <img src="{% static 'cloud/icons/' %}folder.png" height="25px">
                                     </td>
+                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.object_name }}</td>
+                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.last_modified|default:"-" }}</td>
+                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.size|default:"-" }}</td>
+                                    <td>
+                                        <button class="btn btn-secondary" data-bs-toggle="popover"
+                                            title="Действия с объектом"
+                                            data-bs-content='
+                                                <button class="btn btn-primary btn-sm w-100 mb-2">Скачать</button>
+                                                <button class="btn btn-warning btn-sm w-100 mb-2 rename-btn" data-object-name="{{ obj.object_name }}">Переименовать</button>
+                                                <button class="btn btn-danger btn-sm w-100 delete-btn" data-object-name="{{ obj.object_name }}">Удалить</button>'>⋮</button>
+                                    </td>
+                                </tr>
                                 {% else %}
                                 <tr>
                                     <td>
-                                        <img src="{% static 'cloud/icons/' %}file.png" height="25px" alt="">
+                                        <img src="{% static 'cloud/icons/' %}file.png" height="25px">
                                     </td>
-                                {% endif %}
                                     <td>{{ obj.object_name }}</td>
                                     <td>{{ obj.last_modified|default:"-" }}</td>
                                     <td>{{ obj.size|default:"-" }}</td>
@@ -70,10 +80,11 @@
                                             title="Действия с объектом"
                                             data-bs-content='
                                                 <button class="btn btn-primary btn-sm w-100 mb-2">Скачать</button>
-                                                <button class="btn btn-warning btn-sm w-100 mb-2">Переименовать</button>
-                                                <button class="btn btn-danger btn-sm w-100" data-object-name="{{ obj.object_name }}">Удалить</button>'>⋮</button>
+                                                <button class="btn btn-warning btn-sm w-100 mb-2 rename-btn" data-object-name="{{ obj.object_name }}">Переименовать</button>
+                                                <button class="btn btn-danger btn-sm w-100 delete-btn" data-object-name="{{ obj.object_name }}">Удалить</button>'>⋮</button>
                                     </td>
                                 </tr>
+                                {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -82,19 +93,8 @@
             </div>
         </div>
     </div>
-
 </main>
 <script src="{% static 'cloud/js/dropzone.js' %}"></script>
-<script src="{% static 'cloud/js/object_actions.js' %}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-        popoverTriggerList.forEach(function (popoverTriggerEl) {
-            new bootstrap.Popover(popoverTriggerEl, {
-                html: true,
-                sanitize: false
-            });
-        });
-    });
-</script>
+<script type="module" src="{% static 'cloud/js/object_actions.js' %}"></script>
+<script type="module" src="{% static 'cloud/js/register_handlers.js' %}"></script>
 {% endblock %}
