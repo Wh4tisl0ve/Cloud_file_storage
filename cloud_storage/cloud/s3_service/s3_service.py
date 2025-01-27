@@ -1,12 +1,13 @@
 import io
 
-
 import minio
+import minio.datatypes
 
 from minio import Minio
-import minio.datatypes
 from minio.error import S3Error
 from minio.commonconfig import CopySource
+
+from .exceptions import ObjectNameError, ObjectExistsError
 
 
 class S3Service:
@@ -34,15 +35,18 @@ class S3Service:
         current_directory: str = "",
         data: io.BytesIO = io.BytesIO(b""),
     ) -> str:
-        # поработать с именем, если в данной папке уже есть такое
         object_path = self.create_path(user_id, object_name, current_directory)
 
-        self.__client.put_object(
-            self.__bucket_name,
-            object_path,
-            data=data,
-            length=len(data.getbuffer()),
-        )
+        try:
+            self.__client.stat_object(self.__bucket_name, object_path)
+            raise ObjectExistsError("Объект с таким именем уже существует")
+        except S3Error:
+            self.__client.put_object(
+                self.__bucket_name,
+                object_path,
+                data=data,
+                length=len(data.getbuffer()),
+            )
 
         return object_path
 
@@ -52,7 +56,9 @@ class S3Service:
         target_path = self.create_path(user_id, directory=subdirectory)
 
         user_objects = sorted(
-            self.__client.list_objects(self.__bucket_name, prefix=target_path),
+            self.__client.list_objects(
+                self.__bucket_name, prefix=target_path, start_after=target_path
+            ),
             key=lambda obj: not obj.is_dir,
         )
 
@@ -66,7 +72,14 @@ class S3Service:
     ) -> str:
         object_path = self.create_path(user_id, object_name, current_directory)
 
-        self.__client.remove_object(self.__bucket_name, object_path)
+        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+            object_childs = self.__client.list_objects(
+                self.__bucket_name, recursive=True, prefix=object_path
+            )
+            for object in object_childs:
+                self.__client.remove_object(self.__bucket_name, object.object_name)
+        else:
+            self.__client.remove_object(self.__bucket_name, object_path)
 
         return object_path
 
@@ -74,7 +87,7 @@ class S3Service:
         self, user_id: int, old_name: str, new_name: str, directory: str = ""
     ) -> None:
         if old_name == new_name:
-            raise Exception("Имена не могут быть одинаковыми")
+            raise ObjectNameError("Имена не могут быть одинаковыми")
 
         new_object = self.create_path(user_id, new_name, directory)
 
@@ -82,14 +95,23 @@ class S3Service:
 
         try:
             self.__client.stat_object(self.__bucket_name, new_object)
+            raise ObjectExistsError("Объект с таким именем уже существует")
         except S3Error:
-            old_object_child = self.__client.list_objects(
-                self.__bucket_name, recursive=True, prefix=old_object
-            )
-            for object in old_object_child:
+            if minio.datatypes.Object(self.__bucket_name, old_object).is_dir:
+                old_object_child = self.__client.list_objects(
+                    self.__bucket_name, recursive=True, prefix=old_object
+                )
+                for object in old_object_child:
+                    self.__client.copy_object(
+                        self.__bucket_name,
+                        object.object_name.replace(old_object, new_object),
+                        CopySource(self.__bucket_name, object.object_name),
+                    )
+                    self.__client.remove_object(self.__bucket_name, object.object_name)
+            else:
                 self.__client.copy_object(
                     self.__bucket_name,
-                    object.object_name.replace(old_object, new_object),
-                    CopySource(self.__bucket_name, object.object_name),
+                    new_object,
+                    CopySource(self.__bucket_name, old_object),
                 )
-                self.__client.remove_object(self.__bucket_name, object.object_name)
+                self.__client.remove_object(self.__bucket_name, old_object)
