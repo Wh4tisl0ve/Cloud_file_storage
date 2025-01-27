@@ -1,67 +1,35 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const createFileButton = document.getElementById("create-file-button");
-    const createFolderButton = document.getElementById("create-folder-button");
+export function create_object(nameObject) {
+    const object_info = { nameObject: nameObject };
+    send_request('create_object', 'POST', object_info);
+}
 
-    createFileButton.addEventListener("click", () => {
-        name_file = prompt("Введите название объекта:", '');
-        if (validate_name(name_file)) {
-            create_object(name_file);
-        }
-    }
-    );
+export function delete_object(nameObject) {
+    const object_info = { nameObject: nameObject };
+    send_request('delete_object', 'DELETE', object_info);
+}
 
-    createFolderButton.addEventListener("click", () => {
-        name_folder = prompt("Введите название объекта:", '');
-        if (validate_name(name_folder)) {
-            create_object(name_folder + '/');
-        }
-    }
-    );
+export function rename_object(oldName, newName) {
+    const names_data = { oldName: oldName, newName: newName };
+    send_request('rename_object', 'PATCH', names_data);
+}
 
-    function validate_name(nameObject) {
-        if (nameObject && nameObject.trim() !== "" && nameObject.length < 12) {
-            return true;
+function send_request(url, method, data) {
+    const params = new URL(document.location.toString()).searchParams;
+
+    fetch(`/${url}/?${params}`, {
+        method: `${method}`,
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            'X-CSRFToken': document.querySelector("[name=csrfmiddlewaretoken]").value
+        },
+        body: JSON.stringify(data)
+    }).then((response) => {
+        if (response.ok) {
+            location.reload();
         } else {
-            alert("Неверное название объекта");
-            return false;
+            alert("Невозможно выполнить действие");
         }
-    }
-
-    function create_object(nameObject) {
-        let object_info = {
-            nameFolder: nameObject
-        };
-
-        fetch('/create_object/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-                'X-CSRFToken': document.querySelector("[name=csrfmiddlewaretoken]").value
-            },
-            body: JSON.stringify(object_info)
-        }).then((response) => {
-            if (response.ok) {
-                location.reload();
-            }
-        });
-    }
-
-    function delete_object(nameObject) {
-        let object_info = {
-            nameFolder: nameObject
-        };
-
-        fetch('/delete_object/', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-                'X-CSRFToken': document.querySelector("[name=csrfmiddlewaretoken]").value
-            },
-            body: JSON.stringify(object_info)
-        }).then((response) => {
-            if (response.ok) {
-                location.reload();
-            }
-        });
-    }
-});
+    }).catch((error) => {
+        console.error("Ошибка сети:", error);
+    });
+}
