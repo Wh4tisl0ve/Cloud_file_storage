@@ -1,5 +1,8 @@
 import io
 
+import zipfile
+from zipfile import ZipFile
+
 import minio
 import minio.datatypes
 
@@ -51,7 +54,7 @@ class S3Service:
         return object_path
 
     def get_objects(
-        self, user_id: str, subdirectory: str
+        self, user_id: str, subdirectory: str = ""
     ) -> list[minio.datatypes.Object]:
         target_path = self.create_path(user_id, directory=subdirectory)
 
@@ -115,3 +118,34 @@ class S3Service:
                     CopySource(self.__bucket_name, old_object),
                 )
                 self.__client.remove_object(self.__bucket_name, old_object)
+
+    def get_object_bytes(
+        self, user_id: int, object_name: str, current_directory: str = ""
+    ) -> io.BytesIO:
+        object_path = self.create_path(user_id, object_name, current_directory)
+
+        try:
+            if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+                zip_buffer = io.BytesIO()
+
+                object_child = self.__client.list_objects(
+                    self.__bucket_name, recursive=True, prefix=object_path
+                )
+
+                with ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
+                    for object in object_child:
+                        response = self.__client.get_object(
+                            self.__bucket_name, object.object_name
+                        )
+                        object_data = io.BytesIO(response.read())
+                        zip.writestr(object.object_name, object_data.getvalue())
+
+                object_bytes = zip_buffer
+            else:
+                response = self.__client.get_object(self.__bucket_name, object_path)
+                object_bytes = io.BytesIO(response.read())
+        finally:
+            response.close()
+            response.release_conn()
+
+        return object_bytes
