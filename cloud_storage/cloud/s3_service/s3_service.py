@@ -72,7 +72,9 @@ class S3Service:
             for obj in user_objects
         )
 
-        return sorted(objects, key=lambda obj: not obj.is_dir)
+        objects.reverse()
+
+        return objects
 
     def delete_object(
         self, user_id: int, object_name: str, current_directory: str = ""
