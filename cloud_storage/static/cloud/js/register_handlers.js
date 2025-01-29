@@ -1,4 +1,4 @@
-import { delete_object, rename_object, create_object } from './object_actions.js';
+import { delete_object, rename_object, create_object, download_object } from './object_actions.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+/* create */
+
 document.addEventListener("DOMContentLoaded", () => {
     const createFileButton = document.getElementById("create-file-button");
     const createFolderButton = document.getElementById("create-folder-button");
@@ -18,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     createFolderButton.addEventListener("click", () => handleCreateObject("folder"));
 });
+
+/* delete */
 
 document.addEventListener('click', function (e) {
     if (e.target && e.target.classList.contains('delete-btn')) {
@@ -28,6 +32,17 @@ document.addEventListener('click', function (e) {
     }
 });
 
+/* download */
+
+document.addEventListener('click', function (e) {
+    if (e.target && e.target.classList.contains('download-btn')) {
+        const objectName = e.target.getAttribute('data-object-name');
+        download_object(objectName);
+    }
+});
+
+/* rename */
+
 document.addEventListener('click', function (e) {
     if (e.target && e.target.classList.contains('rename-btn')) {
         const oldName = e.target.getAttribute('data-object-name');
@@ -35,6 +50,7 @@ document.addEventListener('click', function (e) {
         rename_object(oldName, newName);
     }
 });
+
 
 function handleCreateObject(type_object) {
     const name_file = prompt("Введите название объекта:", '');
