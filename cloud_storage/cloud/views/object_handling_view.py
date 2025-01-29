@@ -4,9 +4,32 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.apps import apps
 from django.http.response import HttpResponse
+from django.http import FileResponse
 
 
 class S3ObjectHandlingView(LoginRequiredMixin, TemplateView):
+    def get(self, request, *args, **kwargs):
+        s3_service = apps.get_app_config("cloud").s3_service
+
+        name_object = request.GET.get("nameObject", "")
+        current_path = request.GET.get("path", "").strip("/")
+
+        object_bytes = s3_service.get_object_bytes(
+            request.user.id, name_object, current_path
+        )
+        object_bytes.seek(0)
+
+        return FileResponse(
+            object_bytes,
+            filename=(
+                name_object
+                if not name_object.endswith("/")
+                else name_object.strip("/") + ".zip"
+            ),
+            as_attachment=True,
+            content_type="application/octet-stream",
+        )
+
     def post(self, request, *args, **kwargs):
         s3_service = apps.get_app_config("cloud").s3_service
 
