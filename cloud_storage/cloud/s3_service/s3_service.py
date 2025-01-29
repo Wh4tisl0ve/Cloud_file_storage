@@ -58,17 +58,21 @@ class S3Service:
     ) -> list[minio.datatypes.Object]:
         target_path = self.create_path(user_id, directory=subdirectory)
 
-        user_objects = sorted(
-            self.__client.list_objects(
-                self.__bucket_name, prefix=target_path, start_after=target_path
-            ),
-            key=lambda obj: not obj.is_dir,
+        user_objects = self.__client.list_objects(
+            self.__bucket_name, prefix=target_path, start_after=target_path
         )
 
-        for obj in user_objects:
-            obj._object_name = obj._object_name.replace(target_path, "")
+        objects = list(
+            minio.datatypes.Object(
+                self.__bucket_name,
+                object_name=obj.object_name.replace(target_path, ""),
+                last_modified=obj.last_modified,
+                size=obj.size,
+            )
+            for obj in user_objects
+        )
 
-        return user_objects
+        return sorted(objects, key=lambda obj: not obj.is_dir)
 
     def delete_object(
         self, user_id: int, object_name: str, current_directory: str = ""
@@ -124,31 +128,36 @@ class S3Service:
     ) -> io.BytesIO:
         object_path = self.create_path(user_id, object_name, current_directory)
 
-        try:
-            if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
-                zip_buffer = io.BytesIO()
+        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+            zip_buffer = io.BytesIO()
 
-                object_child = self.__client.list_objects(
-                    self.__bucket_name, recursive=True, prefix=object_path, start_after=object_path
-                )
+            object_child = self.__client.list_objects(
+                self.__bucket_name, recursive=True, prefix=object_path
+            )
 
-                with ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
-                    for object in object_child:
-                        response = self.__client.get_object(
-                            self.__bucket_name, object.object_name
-                        )
+            with ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
+                for object in object_child:
+                    current_object_bytes = self.create_object_bytes(object.object_name)
 
-                        object_data = io.BytesIO(response.read())
-                        object_path_archive = object_path.replace(object_name,"")
-                        object_name_archive = object.object_name.replace(object_path_archive, "")
-                        
-                        zip.writestr(object_name_archive, object_data.getvalue())
+                    object_path_archive = object_path.replace(object_name, "")
+                    object_name_archive = object.object_name.replace(
+                        object_path_archive, ""
+                    )
+
+                    zip.writestr(object_name_archive, current_object_bytes.getvalue())
 
                 object_bytes = zip_buffer
-            else:
-                response = self.__client.get_object(self.__bucket_name, object_path)
-                object_bytes = io.BytesIO(response.read())
-        finally:
+        else:
+            object_bytes = self.create_object_bytes(object_path)
+
+        return object_bytes
+
+    def create_object_bytes(self, object_path: str) -> io.BytesIO:
+        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+            object_bytes = io.BytesIO()
+        else:
+            response = self.__client.get_object(self.__bucket_name, object_path)
+            object_bytes = io.BytesIO(response.read())
             response.close()
             response.release_conn()
 
