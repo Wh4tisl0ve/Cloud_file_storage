@@ -129,7 +129,7 @@ class S3Service:
                 zip_buffer = io.BytesIO()
 
                 object_child = self.__client.list_objects(
-                    self.__bucket_name, recursive=True, prefix=object_path
+                    self.__bucket_name, recursive=True, prefix=object_path, start_after=object_path
                 )
 
                 with ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
@@ -137,8 +137,12 @@ class S3Service:
                         response = self.__client.get_object(
                             self.__bucket_name, object.object_name
                         )
+
                         object_data = io.BytesIO(response.read())
-                        zip.writestr(object.object_name, object_data.getvalue())
+                        object_path_archive = object_path.replace(object_name,"")
+                        object_name_archive = object.object_name.replace(object_path_archive, "")
+                        
+                        zip.writestr(object_name_archive, object_data.getvalue())
 
                 object_bytes = zip_buffer
             else:
