@@ -1,9 +1,9 @@
 import io
 
-from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
 from django.apps import apps
 
 
@@ -21,11 +21,14 @@ class MainPageView(LoginRequiredMixin, TemplateView):
             path += f"{page}/"
             breadcrumb.append((path, page))
 
+        page_number = request.GET.get("page", 1)
+        page_obj = Paginator(user_objects, 10).get_page(page_number)
+
         return render(
             request,
             "cloud/layouts/index.html",
             context={
-                "user_objects": user_objects,
+                "page_obj": page_obj,
                 "current_path": current_path,
                 "breadcrumb": breadcrumb,
             },
@@ -39,7 +42,7 @@ class MainPageView(LoginRequiredMixin, TemplateView):
             request.POST.getlist("filePaths"),
         )
 
-        current_path = request.GET.get("path")
+        current_path = request.GET.get("path", "").strip("/")
 
         for file, full_path in files:
             s3_service.create_object(

@@ -49,7 +49,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for obj in user_objects %}
+                                {% for obj in page_obj %}
                                 {% if obj.is_dir %}
                                 <tr style="cursor: pointer;">
                                     <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">
@@ -92,6 +92,9 @@
                 </section>
             </div>
         </div>
+    </div>
+    <div class="col-12">
+        {% include "cloud/includes/pagination.html" %}
     </div>
 </main>
 <script src="{% static 'cloud/js/dropzone.js' %}"></script>
