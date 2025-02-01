@@ -6,6 +6,8 @@ from django.apps import apps
 from django.http.response import HttpResponse
 from django.http import FileResponse
 
+from ..s3_service.exceptions import ObjectExistsError, ObjectNameError
+
 
 class S3ObjectHandlingView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
@@ -38,7 +40,12 @@ class S3ObjectHandlingView(LoginRequiredMixin, TemplateView):
 
         current_path = request.GET.get("path", "").strip("/")
 
-        s3_service.create_object(request.user.id, object_name, current_path)
+        try:
+            s3_service.create_object(request.user.id, object_name, current_path)
+        except ObjectNameError:
+            return HttpResponse(status=400)
+        except ObjectExistsError:
+            return HttpResponse(status=409)
 
         return HttpResponse(status=201)
 
@@ -51,7 +58,12 @@ class S3ObjectHandlingView(LoginRequiredMixin, TemplateView):
 
         current_path = request.GET.get("path", "").strip("/")
 
-        s3_service.rename_object(request.user.id, old_name, new_name, current_path)
+        try:
+            s3_service.rename_object(request.user.id, old_name, new_name, current_path)
+        except ObjectNameError:
+            return HttpResponse(status=400)
+        except ObjectExistsError:
+            return HttpResponse(status=409)
 
         return HttpResponse(status=200)
 

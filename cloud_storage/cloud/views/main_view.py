@@ -3,6 +3,9 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.apps import apps
+from django.http.response import HttpResponse
+
+from ..s3_service.exceptions import ObjectNameError
 
 
 class MainPageView(LoginRequiredMixin, TemplateView):
@@ -39,6 +42,9 @@ class MainPageView(LoginRequiredMixin, TemplateView):
 
         current_path = request.GET.get("path", "").strip("/")
 
-        s3_service.upload_objects(request.user.id, files, current_path)
+        try:
+            s3_service.upload_objects(request.user.id, files, current_path)
+        except ObjectNameError:
+            return HttpResponse(status=400)
 
         return redirect("cloud:main")
