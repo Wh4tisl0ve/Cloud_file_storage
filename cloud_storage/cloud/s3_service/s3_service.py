@@ -8,7 +8,8 @@ import minio.datatypes
 
 from minio import Minio
 from minio.error import S3Error
-from minio.commonconfig import CopySource
+from minio.deleteobjects import DeleteObject
+from minio.commonconfig import CopySource, SnowballObject
 
 from .exceptions import ObjectNameError, ObjectExistsError
 
@@ -37,7 +38,7 @@ class S3Service:
         object_name: str,
         current_directory: str = "",
         data: io.BytesIO = io.BytesIO(b""),
-    ) -> str:
+    ) -> None:
         object_path = self.create_path(user_id, object_name, current_directory)
 
         try:
@@ -51,7 +52,26 @@ class S3Service:
                 length=len(data.getbuffer()),
             )
 
-        return object_path
+    def upload_objects(
+        self,
+        user_id: int,
+        files: list,
+        current_directory: str = "",
+    ) -> None:
+        snowball_list = []
+
+        for file in files:
+            file_data = file.read()
+
+            snowball_list.append(
+                SnowballObject(
+                    self.create_path(user_id, file.name, current_directory),
+                    data=io.BytesIO(file_data),
+                    length=len(io.BytesIO(file_data).getbuffer()),
+                )
+            )
+
+        self.__client.upload_snowball_objects(self.__bucket_name, snowball_list)
 
     def get_objects(
         self, user_id: str, subdirectory: str = ""
@@ -62,7 +82,7 @@ class S3Service:
             self.__bucket_name, prefix=target_path, start_after=target_path
         )
 
-        objects = list(
+        objects = [
             minio.datatypes.Object(
                 self.__bucket_name,
                 object_name=obj.object_name.replace(target_path, ""),
@@ -70,7 +90,7 @@ class S3Service:
                 size=obj.size,
             )
             for obj in user_objects
-        )
+        ]
 
         objects.reverse()
 
@@ -78,19 +98,19 @@ class S3Service:
 
     def delete_object(
         self, user_id: int, object_name: str, current_directory: str = ""
-    ) -> str:
+    ) -> None:
         object_path = self.create_path(user_id, object_name, current_directory)
 
         if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
-            object_childs = self.__client.list_objects(
-                self.__bucket_name, recursive=True, prefix=object_path
+            delete_object_list = map(
+                lambda obj: DeleteObject(obj.object_name),
+                self.__client.list_objects(
+                    self.__bucket_name, recursive=True, prefix=object_path
+                ),
             )
-            for object in object_childs:
-                self.__client.remove_object(self.__bucket_name, object.object_name)
+            list(self.__client.remove_objects(self.__bucket_name, delete_object_list))
         else:
             self.__client.remove_object(self.__bucket_name, object_path)
-
-        return object_path
 
     def rename_object(
         self, user_id: int, old_name: str, new_name: str, directory: str = ""
