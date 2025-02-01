@@ -12,6 +12,7 @@ from minio.deleteobjects import DeleteObject
 from minio.commonconfig import CopySource, SnowballObject
 
 from .exceptions import ObjectNameError, ObjectExistsError
+from .validators import check_object_name
 
 
 class S3Service:
@@ -39,6 +40,8 @@ class S3Service:
         current_directory: str = "",
         data: io.BytesIO = io.BytesIO(b""),
     ) -> None:
+        check_object_name(object_name.strip("/"))
+
         object_path = self.create_path(user_id, object_name, current_directory)
 
         try:
@@ -61,6 +64,7 @@ class S3Service:
         snowball_list = []
 
         for file in files:
+            check_object_name(file.name.strip("/"))
             file_data = file.read()
 
             snowball_list.append(
@@ -115,6 +119,8 @@ class S3Service:
     def rename_object(
         self, user_id: int, old_name: str, new_name: str, directory: str = ""
     ) -> None:
+        check_object_name(new_name.strip("/"))
+
         if old_name == new_name:
             raise ObjectNameError("Имена не могут быть одинаковыми")
 
