@@ -7,13 +7,20 @@
     <div class="container">
         <div class="row mt-2">
             <div class="col-12 col-md-2 mb-3">
+                <h3>Действия</h3>
                 <button class="btn btn-primary w-100 mb-2" id="create-folder-button">
                     Создать папку
                 </button>
                 <button class="btn btn-primary w-100 mb-2" id="create-file-button">
                     Создать файл
                 </button>
-                {% include "../includes/dropzone.html" %}
+                <h3>Загрузка</h3>
+                <button class="btn btn-primary w-100 mb-2" id="upload-folder-btn">📂 Загрузить папку
+                    <input class="btn btn-primary w-100 mb-2" type="file" id="many-file-picker" name="fileList" webkitdirectory multiple hidden />
+                </button>
+                <button class="btn btn-primary w-100 mb-2" id="upload-file-btn">📄 Загрузить файл
+                    <input class="btn btn-primary w-100 mb-2" type="file" id="one-file-picker" name="file" hidden />
+                </button> 
             </div>
 
             <div class="col-12 col-md-10">
@@ -97,7 +104,6 @@
         {% include "cloud/includes/pagination.html" %}
     </div>
 </main>
-<script src="{% static 'cloud/js/dropzone.js' %}"></script>
-<script type="module" src="{% static 'cloud/js/object_actions.js' %}"></script>
 <script type="module" src="{% static 'cloud/js/register_handlers.js' %}"></script>
+<script type="module" src="{% static 'cloud/js/object_actions.js' %}"></script>
 {% endblock %}
