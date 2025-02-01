@@ -45,7 +45,7 @@ function send_request(url, method, data) {
         if (response.ok) {
             location.reload();
         } else {
-            alert("Невозможно выполнить действие");
+            alert("Невозможно выполнить действие. Проверьте имя объекта, оно не должно содержать более 15 символов");
         }
     }).catch((error) => {
         console.error("Ошибка сети:", error);

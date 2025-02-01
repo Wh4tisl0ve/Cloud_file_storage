@@ -73,10 +73,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     oneFileInput.addEventListener("change", () => {
         upload_object(oneFileInput.files);
+        oneFileInput.value = "";
     });
 
     manyFileInput.addEventListener("change", () => {
         upload_object(manyFileInput.files);
+        manyFileInput.value = "";
     });
 
     uploadFileButton.addEventListener("click", function () {
