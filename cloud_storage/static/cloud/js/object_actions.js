@@ -26,7 +26,10 @@ export function upload_object(files) {
     const formData = new FormData();
 
     for (const file of files) {
-        formData.append("fileList", file, file.webkitRelativePath || file.name);
+        formData.append("fileList", file);
+        if (file.webkitRelativePath) {
+            formData.append("filePaths", file.webkitRelativePath);
+        }
     }
 
     send_request('upload_object', 'POST', formData);

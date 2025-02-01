@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.apps import apps
 from django.http.response import HttpResponse
+from django.core.files.base import ContentFile
 
 from ..s3_service.exceptions import ObjectNameError
 
@@ -39,8 +40,15 @@ class MainPageView(LoginRequiredMixin, TemplateView):
         s3_service = apps.get_app_config("cloud").s3_service
 
         files = request.FILES.getlist("fileList")
+        file_paths = request.POST.getlist("filePaths")
 
         current_path = request.GET.get("path", "").strip("/")
+
+        if file_paths:
+            files = [
+                ContentFile(file.read(), name=path)
+                for file, path in zip(files, file_paths)
+            ]
 
         try:
             s3_service.upload_objects(request.user.id, files, current_path)

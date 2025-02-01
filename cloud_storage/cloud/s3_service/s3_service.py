@@ -64,7 +64,9 @@ class S3Service:
         snowball_list = []
 
         for file in files:
-            check_object_name(file.name.strip("/"))
+            file_name = file.name.split('/')[-1]
+            check_object_name(file_name.strip("/"))
+            
             file_data = file.read()
 
             snowball_list.append(
