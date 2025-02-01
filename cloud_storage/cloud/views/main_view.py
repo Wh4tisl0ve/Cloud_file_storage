@@ -1,5 +1,3 @@
-import io
-
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
@@ -37,16 +35,10 @@ class MainPageView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         s3_service = apps.get_app_config("cloud").s3_service
 
-        files = zip(
-            request.FILES.getlist("fileList"),
-            request.POST.getlist("filePaths"),
-        )
+        files = request.FILES.getlist("fileList")
 
         current_path = request.GET.get("path", "").strip("/")
 
-        for file, full_path in files:
-            s3_service.create_object(
-                request.user.id, full_path, current_path, io.BytesIO(file.read())
-            )
+        s3_service.upload_objects(request.user.id, files, current_path)
 
         return redirect("cloud:main")
