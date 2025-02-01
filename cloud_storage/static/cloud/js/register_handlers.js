@@ -1,4 +1,4 @@
-import { delete_object, rename_object, create_object, download_object } from './object_actions.js';
+import { delete_object, rename_object, create_object, download_object, upload_object } from './object_actions.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
@@ -61,3 +61,29 @@ function handleCreateObject(type_object) {
         alert("Имя объекта должно быть не более 15 символов");
     }
 }
+
+/* upload */
+
+document.addEventListener("DOMContentLoaded", () => {
+    const uploadFileButton = document.getElementById("upload-file-btn");
+    const uploadFolderButton = document.getElementById("upload-folder-btn");
+
+    const oneFileInput = document.getElementById("one-file-picker");
+    const manyFileInput = document.getElementById("many-file-picker");
+
+    oneFileInput.addEventListener("change", () => {
+        upload_object(oneFileInput.files);
+    });
+
+    manyFileInput.addEventListener("change", () => {
+        upload_object(manyFileInput.files);
+    });
+
+    uploadFileButton.addEventListener("click", function () {
+        document.getElementById("one-file-picker").click();
+    });
+
+    uploadFolderButton.addEventListener("click", function () {
+        document.getElementById("many-file-picker").click();
+    });
+});
