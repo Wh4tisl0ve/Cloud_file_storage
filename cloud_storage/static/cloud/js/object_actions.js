@@ -1,16 +1,16 @@
 export function create_object(nameObject) {
     const objectInfo = { nameObject: nameObject };
-    send_request('create_object', 'POST', objectInfo);
+    send_request('create_object', 'POST', JSON.stringify(objectInfo));
 }
 
 export function delete_object(nameObject) {
     const objectInfo = { nameObject: nameObject };
-    send_request('delete_object', 'DELETE', objectInfo);
+    send_request('delete_object', 'DELETE', JSON.stringify(objectInfo));
 }
 
 export function rename_object(oldName, newName) {
     const nameData = { oldName: oldName, newName: newName };
-    send_request('rename_object', 'PATCH', nameData);
+    send_request('rename_object', 'PATCH', JSON.stringify(nameData));
 }
 
 export function download_object(nameObject) {
@@ -22,16 +22,25 @@ export function download_object(nameObject) {
     window.location.href = `/download_object/?${params.toString()}`
 }
 
+export function upload_object(files) {
+    const formData = new FormData();
+
+    for (const file of files) {
+        formData.append("fileList", file, file.webkitRelativePath || file.name);
+    }
+
+    send_request('upload_object', 'POST', formData);
+}
+
 function send_request(url, method, data) {
     const params = new URL(document.location.toString()).searchParams;
 
     fetch(`/${url}/?${params}`, {
-        method: `${method}`,
+        method: method,
         headers: {
-            'Content-Type': 'application/json;charset=utf-8',
             'X-CSRFToken': document.querySelector("[name=csrfmiddlewaretoken]").value
         },
-        body: JSON.stringify(data)
+        body: data
     }).then((response) => {
         if (response.ok) {
             location.reload();
