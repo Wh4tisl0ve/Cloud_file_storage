@@ -103,3 +103,19 @@ class S3ServiceFilesTestCase(S3ServiceBaseConfigClass, TestCase):
 
         # new object created
         self.assertEqual(new_object_path, target_object.object_name)
+
+    def test_find_files(self):
+        user_id = 1
+        query_string = "es"
+
+        for i in range(5):
+            self.s3_service.create_object(user_id, object_name=f"test{i}")
+
+        self.s3_service.create_object(
+            user_id, object_name="Yes!", current_directory="folder"
+        )
+
+        objects = self.s3_service.find_objects(user_id, query_string)
+
+        for obj in objects:
+            self.assertIn(query_string, obj.object_name.rstrip("/").split("/")[-1])

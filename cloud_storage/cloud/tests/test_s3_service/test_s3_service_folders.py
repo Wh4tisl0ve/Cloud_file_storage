@@ -150,3 +150,19 @@ class S3ServiceFoldersTestCase(S3ServiceBaseConfigClass, TestCase):
         # new hierarchy created
         for directory in all_directories:
             self.assertIn(directory.object_name, expected_hierarchy)
+
+    def test_find_folders(self):
+        user_id = 1
+        query_string = "es"
+
+        for i in range(5):
+            self.s3_service.create_object(user_id, object_name=f"test{i}/")
+
+        self.s3_service.create_object(
+            user_id, object_name="Yes/", current_directory="folder"
+        )
+
+        objects = self.s3_service.find_objects(user_id, query_string)
+
+        for obj in objects:
+            self.assertIn(query_string, obj.object_name.rstrip("/").split("/")[-1])

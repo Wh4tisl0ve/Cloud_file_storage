@@ -13,6 +13,7 @@ class S3ServiceBaseConfigClass:
         )
 
         self.bucket_name = "test-cloud-bucket"
+
         self.client.make_bucket(self.bucket_name)
 
         self.s3_service = S3Service(self.client, self.bucket_name)
