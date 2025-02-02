@@ -126,7 +126,7 @@ class S3Service:
                 obj.object_name.replace(look_directory, ""), obj.last_modified
             )
             for obj in objects
-            if query_string in obj.object_name.rstrip("/").split("/")[-1]
+            if query_string in obj.object_name.rstrip("/").split("/")[-1].lower()
         ]
 
         return finding_objects
