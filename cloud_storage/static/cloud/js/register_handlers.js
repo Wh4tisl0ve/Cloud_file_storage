@@ -47,16 +47,20 @@ document.addEventListener('click', function (e) {
     if (e.target && e.target.classList.contains('rename-btn')) {
         const oldName = e.target.getAttribute('data-object-name');
         const newName = prompt("Введите новое название объекта:", oldName);
-        rename_object(oldName, newName);
+        if (newName !== null) {
+            rename_object(oldName, newName);
+        }
     }
 });
 
 
 function handleCreateObject(type_object) {
     const name_file = prompt("Введите название объекта:", '');
-    if (name_file && name_file.length < 15) {
+    if (name_file.length < 15) {
         const objectName = type_object === "folder" ? `${name_file.replace(/^\/+|\/+$/g, '')}/` : name_file;
-        create_object(objectName);
+        if (objectName !== null) {
+            create_object(objectName);
+        }
     } else {
         alert("Имя объекта должно быть не более 15 символов");
     }
