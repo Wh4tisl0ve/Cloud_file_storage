@@ -5,6 +5,14 @@
                     aria-current="page">Главная</a>
             </li>
         </ul>
+        <div class="col-lg-4 col-xl-6">
+            <form class="d-flex flex-row mb-2 p-1 bg-white input-group" method="GET"
+                action="{% url 'cloud:search' %}">
+                <input type="search" maxlength="15" class="form-control rounded-0" name='query'
+                    placeholder="Поиск файлов" aria-label="Search" aria-describedby="search-addon">
+                <button class="btn btn-secondary rounded-0 flex-shrink-0" type="submit">Поиск</button>
+            </form>
+        </div>
         <ul class="nav">
             <p class="nav-link link-dark px-2">Привет, {{ user.username }}!</p>
             <form id="logout-form" action="{% url 'users:logout' %}" method="POST">

@@ -1,0 +1,44 @@
+{% extends '../base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<section id="files" class="section">
+    <div class="table-responsive">
+        <h4 class="mt-4 mb-5"><strong>Результат поиска:</strong></h4>
+        <ul class="list-group overflow-auto" id="fileList" style="max-height: 400px;">
+            {% for obj, name, directory in objects %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'cloud:main' %}{% if directory %}?path={{ directory }}{% endif %}"
+                    class="d-flex w-100 text-decoration-none text-dark">
+                    {% if obj.is_dir %}
+                    <img src="{% static 'cloud/icons/' %}folder.png" height="25px">
+                    {% else %}
+                    <img src="{% static 'cloud/icons/' %}file.png" height="25px">
+                    {% endif %}
+
+                    <span class="text-left ms-2">
+                        {{ name }}
+                    </span>
+
+                    <span class="flex-grow-1 text-center">
+                        {% if directory %}
+                        /{{ directory }}/
+                        {% else %}
+                        <b>root</b>
+                        {% endif %}
+                    </span>
+
+                    <span class="text-muted mx-3">{{ obj.last_modified|default:"-" }}</span>
+
+                    <span class="text-primary">→</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+</section>
+
+{% endblock %}
