@@ -1,12 +1,9 @@
 import io
-
 import zipfile
-from zipfile import ZipFile
-
-import minio
-import minio.datatypes
+from datetime import datetime
 
 from minio import Minio
+from minio.datatypes import Object
 from minio.error import S3Error
 from minio.deleteobjects import DeleteObject
 from minio.commonconfig import CopySource, SnowballObject
@@ -79,9 +76,7 @@ class S3Service:
 
         self.__client.upload_snowball_objects(self.__bucket_name, snowball_list)
 
-    def get_objects(
-        self, user_id: str, subdirectory: str = ""
-    ) -> list[minio.datatypes.Object]:
+    def get_objects(self, user_id: str, subdirectory: str = "") -> list[Object]:
         target_path = self.create_path(user_id, directory=subdirectory)
 
         user_objects = self.__client.list_objects(
@@ -89,11 +84,8 @@ class S3Service:
         )
 
         objects = [
-            minio.datatypes.Object(
-                self.__bucket_name,
-                object_name=obj.object_name.replace(target_path, ""),
-                last_modified=obj.last_modified,
-                size=obj.size,
+            self.create_minio_object(
+                obj.object_name.replace(target_path, ""), obj.last_modified, obj.size
             )
             for obj in user_objects
         ]
@@ -107,16 +99,37 @@ class S3Service:
     ) -> None:
         object_path = self.create_path(user_id, object_name, current_directory)
 
-        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
-            delete_object_list = map(
-                lambda obj: DeleteObject(obj.object_name),
-                self.__client.list_objects(
+        if Object(self.__bucket_name, object_path).is_dir:
+            delete_object_list = [
+                DeleteObject(obj.object_name)
+                for obj in self.__client.list_objects(
                     self.__bucket_name, recursive=True, prefix=object_path
-                ),
-            )
+                )
+            ]
             list(self.__client.remove_objects(self.__bucket_name, delete_object_list))
         else:
             self.__client.remove_object(self.__bucket_name, object_path)
+
+    def find_objects(self, user_id: int, query_string: str) -> list[Object]:
+        query_string = query_string.lower()
+
+        look_directory = self.create_path(user_id)
+        objects = self.__client.list_objects(
+            self.__bucket_name,
+            recursive=True,
+            prefix=look_directory,
+            start_after=look_directory,
+        )
+
+        finding_objects = [
+            self.create_minio_object(
+                obj.object_name.replace(look_directory, ""), obj.last_modified
+            )
+            for obj in objects
+            if query_string in obj.object_name.rstrip("/").split("/")[-1]
+        ]
+
+        return finding_objects
 
     def rename_object(
         self, user_id: int, old_name: str, new_name: str, directory: str = ""
@@ -134,7 +147,7 @@ class S3Service:
             self.__client.stat_object(self.__bucket_name, new_object)
             raise ObjectExistsError("Объект с таким именем уже существует")
         except S3Error:
-            if minio.datatypes.Object(self.__bucket_name, old_object).is_dir:
+            if Object(self.__bucket_name, old_object).is_dir:
                 old_object_child = self.__client.list_objects(
                     self.__bucket_name, recursive=True, prefix=old_object
                 )
@@ -151,14 +164,14 @@ class S3Service:
     ) -> io.BytesIO:
         object_path = self.create_path(user_id, object_name, current_directory)
 
-        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+        if Object(self.__bucket_name, object_path).is_dir:
             zip_buffer = io.BytesIO()
 
             object_child = self.__client.list_objects(
                 self.__bucket_name, recursive=True, prefix=object_path
             )
 
-            with ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip:
                 for object in object_child:
                     current_object_bytes = self.create_object_bytes(object.object_name)
 
@@ -176,7 +189,7 @@ class S3Service:
         return object_bytes
 
     def create_object_bytes(self, object_path: str) -> io.BytesIO:
-        if minio.datatypes.Object(self.__bucket_name, object_path).is_dir:
+        if Object(self.__bucket_name, object_path).is_dir:
             object_bytes = io.BytesIO()
         else:
             response = self.__client.get_object(self.__bucket_name, object_path)
@@ -193,3 +206,13 @@ class S3Service:
             CopySource(self.__bucket_name, old_name),
         )
         self.__client.remove_object(self.__bucket_name, old_name)
+
+    def create_minio_object(
+        self, object_name: str, last_modified: datetime = datetime.now(), size: int = 0
+    ) -> Object:
+        return Object(
+            bucket_name=self.__bucket_name,
+            object_name=object_name,
+            last_modified=last_modified,
+            size=size,
+        )
