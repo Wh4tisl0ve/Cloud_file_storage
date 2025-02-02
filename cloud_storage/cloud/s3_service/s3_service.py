@@ -64,9 +64,9 @@ class S3Service:
         snowball_list = []
 
         for file in files:
-            file_name = file.name.split('/')[-1]
+            file_name = file.name.split("/")[-1]
             check_object_name(file_name.strip("/"))
-            
+
             file_data = file.read()
 
             snowball_list.append(
@@ -139,19 +139,12 @@ class S3Service:
                     self.__bucket_name, recursive=True, prefix=old_object
                 )
                 for object in old_object_child:
-                    self.__client.copy_object(
-                        self.__bucket_name,
+                    self.rename(
+                        object.object_name,
                         object.object_name.replace(old_object, new_object),
-                        CopySource(self.__bucket_name, object.object_name),
                     )
-                    self.__client.remove_object(self.__bucket_name, object.object_name)
             else:
-                self.__client.copy_object(
-                    self.__bucket_name,
-                    new_object,
-                    CopySource(self.__bucket_name, old_object),
-                )
-                self.__client.remove_object(self.__bucket_name, old_object)
+                self.rename(old_object, new_object)
 
     def get_object_bytes(
         self, user_id: int, object_name: str, current_directory: str = ""
@@ -192,3 +185,11 @@ class S3Service:
             response.release_conn()
 
         return object_bytes
+
+    def rename(self, old_name: str, new_name: str) -> None:
+        self.__client.copy_object(
+            self.__bucket_name,
+            new_name,
+            CopySource(self.__bucket_name, old_name),
+        )
+        self.__client.remove_object(self.__bucket_name, old_name)
