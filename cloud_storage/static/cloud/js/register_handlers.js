@@ -56,7 +56,7 @@ document.addEventListener('click', function (e) {
 
 function handleCreateObject(type_object) {
     const name_file = prompt("Введите название объекта:", '');
-    if (name_file.length < 15) {
+    if (name_file !== null && name_file.length < 15) {
         const objectName = type_object === "folder" ? `${name_file.replace(/^\/+|\/+$/g, '')}/` : name_file;
         if (objectName !== null) {
             create_object(objectName);
