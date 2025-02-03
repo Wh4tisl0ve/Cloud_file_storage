@@ -21,8 +21,6 @@ COPY pyproject.toml poetry.lock ./
 RUN --mount=type=cache,target=/root/.cache/pypoetry \
     poetry install --no-root --no-interaction --no-ansi
 
-WORKDIR /app
-
 COPY ./cloud_storage ./
 
 CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
