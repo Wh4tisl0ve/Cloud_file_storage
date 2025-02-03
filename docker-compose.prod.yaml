@@ -40,7 +40,7 @@ services:
     volumes:
       - redis_data:/data
     env_file:
-      - /cloud_storage/.env.prod
+      - ./cloud_storage/.env.prod
 
   minio:
     container_name: minio
