@@ -1,0 +1,71 @@
+services:
+  app:
+    build:
+      dockerfile: ./Dockerfile.prod
+      context: ./
+    container_name: cloud_app
+    command: >
+      sh -c "poetry run python manage.py collectstatic --noinput && poetry run python manage.py migrate && poetry run gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    expose:
+      - 8000
+    volumes:
+      - static_volume:/user/static
+    depends_on:
+      - redis
+      - postgres
+      - minio
+    env_file:
+      - ./cloud_storage/.env.prod
+
+  postgres:
+    container_name: dbcloud_storage
+    image: postgres:16.0-alpine
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    env_file:
+      - ./cloud_storage/.env.prod
+
+  redis:
+    container_name: redis
+    image: redis:7.4.2-alpine
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass \"$REDIS_PASSWORD\"" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        redis-server /usr/local/etc/redis/redis.conf
+      '
+    volumes:
+      - redis_data:/data
+    env_file:
+      - /cloud_storage/.env.prod
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    command: server /data
+    volumes:
+      - minio_volume:/data
+    env_file:
+      - ./cloud_storage/.env.prod
+
+  nginx:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./docker/nginx
+    container_name: nginx
+    image: nginx
+    volumes:
+      - static_volume:/user/static
+    depends_on:
+      - app
+    ports:
+      - 80:80
+
+volumes:
+  postgres_volume:
+  minio_volume:
+  redis_data:
+  static_volume:

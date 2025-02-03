@@ -13,6 +13,7 @@ redis = "^5.2.1"
 python-decouple = "^3.8"
 django-bootstrap5 = "^24.3"
 minio = "^7.2.14"
+gunicorn = "^23.0.0"
 
 
 [build-system]

@@ -1,0 +1,19 @@
+# Git history and metadata
+**/.git
+**/.gitignore
+
+# Editor configurations
+**/.vscode
+
+# Virtual environments
+**/.venv
+**/env
+
+# Python cache and database
+**/__pycache__/
+*.sqlite3
+
+# Docker configuration files
+README.md
+**/Dockerfile*
+**/docker-compose
