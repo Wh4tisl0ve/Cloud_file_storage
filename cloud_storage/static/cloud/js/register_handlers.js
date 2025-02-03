@@ -56,13 +56,13 @@ document.addEventListener('click', function (e) {
 
 function handleCreateObject(type_object) {
     const name_file = prompt("Введите название объекта:", '');
-    if (name_file !== null && name_file.length < 15) {
-        const objectName = type_object === "folder" ? `${name_file.replace(/^\/+|\/+$/g, '')}/` : name_file;
-        if (objectName !== null) {
+    if (name_file) {
+        if (name_file.length < 15) {
+            const objectName = type_object === "folder" ? `${name_file.replace(/^\/+|\/+$/g, '')}/` : name_file;
             create_object(objectName);
+        } else {
+            alert("Имя объекта должно быть не более 15 символов");
         }
-    } else {
-        alert("Имя объекта должно быть не более 15 символов");
     }
 }
 
