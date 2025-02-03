@@ -18,4 +18,7 @@ class CloudConfig(AppConfig):
 
         bucket_name = settings.MINIO_BUCKET_NAME
 
+        if not minio_client.bucket_exists(bucket_name):
+            minio_client.make_bucket(bucket_name)
+
         self.s3_service = S3Service(minio_client, bucket_name)
