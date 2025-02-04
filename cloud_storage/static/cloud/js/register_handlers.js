@@ -47,7 +47,12 @@ document.addEventListener('click', function (e) {
     if (e.target && e.target.classList.contains('rename-btn')) {
         const oldName = e.target.getAttribute('data-object-name');
         const newName = prompt("Введите новое название объекта:", oldName);
-        if (newName !== null) {
+
+        const validation = newName.includes('/') ? isValidObjectName(newName.slice(0, -1)) : isValidObjectName(newName);
+
+        if (!validation.valid) {
+            alert(validation.message);
+        } else {
             rename_object(oldName, newName);
         }
     }
@@ -56,12 +61,13 @@ document.addEventListener('click', function (e) {
 
 function handleCreateObject(type_object) {
     const name_file = prompt("Введите название объекта:", '');
+    const validation = isValidObjectName(name_file);
     if (name_file) {
-        if (name_file.length < 15) {
+        if (!validation.valid) {
+            alert(validation.message);
+        } else {
             const objectName = type_object === "folder" ? `${name_file.replace(/^\/+|\/+$/g, '')}/` : name_file;
             create_object(objectName);
-        } else {
-            alert("Имя объекта должно быть не более 15 символов");
         }
     }
 }
@@ -93,3 +99,25 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("many-file-picker").click();
     });
 });
+
+function isValidObjectName(name) {
+    const forbiddenChars = /[\\/:*?"<>|%#]/;
+
+    if (!name || name.trim().length === 0) {
+        return { valid: false, message: "Имя объекта не может быть пустым" };
+    }
+
+    if (name.length > 40) {
+        return { valid: false, message: "Имя объекта слишком длинное (макс. 40 символов)" };
+    }
+
+    if (forbiddenChars.test(name)) {
+        return { valid: false, message: "Имя содержит запрещенные символы: \\ / : * ? \" < > | %" };
+    }
+
+    if (/^\/+$/.test(name)) {
+        return { valid: false, message: "Недопустимое имя объекта" };
+    }
+
+    return { valid: true, message: "OK" };
+}
