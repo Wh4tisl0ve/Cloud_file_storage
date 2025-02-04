@@ -30,12 +30,12 @@
                         {% for fullpath, name_folder in breadcrumb %}
                             {% if forloop.last %}
                             <li class="breadcrumb-item active" aria-current="page">
-                                {{ name_folder }}
+                                {{ name_folder|truncatechars:10 }}
                             </li>
                             {% else %}
                             <li class="breadcrumb-item">
-                                <a href="/?path={{ fullpath }}">
-                                    {{ name_folder }}
+                                <a href="/?path={{ fullpath|urlencode:"" }}">
+                                    {{ name_folder|truncatechars:10 }}
                                 </a>
                             </li>
                             {% endif %}
@@ -62,7 +62,7 @@
                                     <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">
                                         <img src="{% static 'cloud/icons/' %}folder.png" height="25px">
                                     </td>
-                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.object_name }}</td>
+                                    <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.object_name|truncatechars:10 }}</td>
                                     <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.last_modified|default:"-" }}</td>
                                     <td onclick="document.location = '?path={{ current_path }}/{{ obj.object_name }}';">{{ obj.size|default:"-" }}</td>
                                     <td>
@@ -79,9 +79,9 @@
                                     <td>
                                         <img src="{% static 'cloud/icons/' %}file.png" height="25px">
                                     </td>
-                                    <td>{{ obj.object_name }}</td>
-                                    <td>{{ obj.last_modified|default:"-" }}</td>
-                                    <td>{{ obj.size|default:"-" }}</td>
+                                    <td>{{ obj.object_name|truncatechars:10 }}</td>
+                                    <td>{{ obj.last_modified|date:"d M Y H:i"|default:"-" }}</td>
+                                    <td>{{ obj.size|filesizeformat|default:"-" }}</td>
                                     <td>
                                         <button class="btn btn-secondary" data-bs-toggle="popover"
                                             title="Действия с объектом"
