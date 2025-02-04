@@ -31,6 +31,7 @@
 
 
 ## Пример .env 
+```env
 #### Django-App
 DEBUG=Режим отладки(False - выключен, True - включен)  
 SECRET_KEY=Cекретный ключ для Django  
@@ -54,6 +55,7 @@ MINIO_PORT=Порт, используемый для подключения к M
 MINIO_BUCKET_NAME=user-files  
 MINIO_ACCESS_KEY=Логин для доступа к пользовательскому интерфейсу MinIO  
 MINIO_SECRET_KEY=Пароль для доступа к пользовательскому интерфейсу MinIO   
+```
 
 ## Структура приложений Django
 
