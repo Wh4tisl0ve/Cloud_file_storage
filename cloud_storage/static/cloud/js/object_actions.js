@@ -1,6 +1,11 @@
 export function create_object(nameObject) {
     const objectInfo = { nameObject: nameObject };
-    send_request('create_object', 'POST', JSON.stringify(objectInfo));
+    if (validate_name(nameObject)) {
+        alert('Имя объекта не должно содержать /, % или #');
+    }
+    else {
+        send_request('create_object', 'POST', JSON.stringify(objectInfo));
+    }
 }
 
 export function delete_object(nameObject) {
